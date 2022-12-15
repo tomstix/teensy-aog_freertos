@@ -1,0 +1,194 @@
+#include "settings.hpp"
+#include "sd_card.hpp"
+#include "comms_aog.hpp"
+
+#include <string>
+#include <vector>
+
+HardwareConfiguration hardwareConfiguration;
+NetworkConfiguration networkConfiguration;
+AOG_SteerSettings aog_steerSettings;
+AOG_SteerConfig aog_steerConfig;
+
+EventGroupHandle_t settings_loaded_event;
+
+void to_json(json &j, const HardwareConfiguration &config)
+{
+    j["IMU Type"] = config.imuType;
+    j["WAS Type"] = config.wasType;
+    j["WAS Pin"] = config.teensy_was_pin_number;
+    j["Output"] = config.outputType;
+}
+void from_json(const json &j, HardwareConfiguration &config)
+{
+    if (!j.at("IMU Type").get_to(config.imuType))
+        Log.errorln("Tried parsing Invalid IMU Type from JSON");
+    if (!j.at("WAS Type").get_to(config.wasType))
+        Log.errorln("Tried parsing Invalid WAS Type from JSON");
+    if (!j.at("WAS Pin").get_to(config.teensy_was_pin_number))
+        Log.errorln("Tried parsing Invalid WAS Pin from JSON");
+    if (!j.at("Output").get_to(config.outputType))
+        Log.errorln("Tried parsing Invalid Output Type from JSON");
+}
+
+void to_json(json &j, const NetworkConfiguration &config)
+{
+    j["IP Address"] = {config.ip[0], config.ip[1], config.ip[2], config.ip[3]};
+    j["Netmask"] = {config.netmask[0], config.netmask[1], config.netmask[2], config.netmask[3]};
+    j["Gateway"] = {config.gateway[0], config.gateway[1], config.gateway[2], config.gateway[3]};
+}
+void from_json(const json &j, NetworkConfiguration &config)
+{
+    std::vector<uint8_t> ip_vec;
+    std::vector<uint8_t> mask_vec;
+    std::vector<uint8_t> gw_vec;
+    j.at("IP Address").get_to(ip_vec);
+    j.at("Netmask").get_to(mask_vec);
+    j.at("Gateway").get_to(gw_vec);
+    auto ip_from_vector([](std::vector<uint8_t> vec)
+                        {
+        if(vec.size() != 4)
+        {
+            Log.errorln("Error Converting JSON to NetworkConfiguration! Vector doesn't have 4 components.");
+            return IPAddress(0,0,0,0);
+        }
+        IPAddress ret_ip;
+        for (int i = 0; i < 4; i++)
+        {
+            ret_ip[i] = vec[i];
+        }
+        return ret_ip; });
+    config.ip = ip_from_vector(ip_vec);
+    config.netmask = ip_from_vector(mask_vec);
+    config.gateway = ip_from_vector(gw_vec);
+}
+
+bool read_bit(const uint8_t value, const uint8_t bit)
+{
+    return (value >> bit) & 0x01;
+}
+
+void AOG_SteerSettings::parse(uint8_t *buf)
+{
+    Kp = ((float)buf[5]);
+    highPWM = buf[6];
+    lowPWM = buf[7];
+    minPWM = buf[8];
+    steerSensorCounts = buf[9];
+    steerSensorCounts *= 2;
+    wasOffset = buf[10];
+    wasOffset |= buf[11] << 8;
+    wasOffset *= 2;
+    AckermanFix = (float)buf[12] / 100.0;
+
+    Log.traceln("Parsed new AOG steer settings!");
+}
+void to_json(json &j, const AOG_SteerSettings &settings)
+{
+    j = json{
+        {"Kp", settings.Kp},
+        {"highPWM", settings.highPWM},
+        {"lowPWM", settings.lowPWM},
+        {"minPWM", settings.minPWM},
+        {"steerSensorCounts", settings.steerSensorCounts},
+        {"wasOffset", settings.wasOffset},
+        {"AckermanFix", settings.AckermanFix}};
+}
+void from_json(const json &j, AOG_SteerSettings &settings)
+{
+    j.at("Kp").get_to(settings.Kp);
+    j.at("highPWM").get_to(settings.highPWM);
+    j.at("lowPWM").get_to(settings.lowPWM);
+    j.at("minPWM").get_to(settings.minPWM);
+    j.at("steerSensorCounts").get_to(settings.steerSensorCounts);
+    j.at("wasOffset").get_to(settings.wasOffset);
+}
+
+void AOG_SteerConfig::parse(uint8_t *buf)
+{
+    uint8_t sett = buf[5];
+
+    InvertWAS = read_bit(sett, 0);
+    IsRelayActiveHigh = read_bit(sett, 1);
+    MotorDriveDirection = read_bit(sett, 2);
+    SingleInputWAS = read_bit(sett, 3);
+    CytronDriver = read_bit(sett, 4);
+    SteerSwitch = read_bit(sett, 5);
+    SteerButton = read_bit(sett, 6);
+    ShaftEncoder = read_bit(sett, 7);
+
+    PulseCountMax = buf[6];
+
+    IsDanfoss = buf[8];
+
+    Log.traceln("Parsed new AOG steer config!");
+}
+void to_json(json &j, const AOG_SteerConfig &settings)
+{
+    j = json{
+        {"InvertWAS", settings.InvertWAS},
+        {"IsRelayActiveHigh", settings.IsRelayActiveHigh},
+        {"MotorDriveDirection", settings.MotorDriveDirection},
+        {"SingleInputWAS", settings.SingleInputWAS},
+        {"CytronDriver", settings.CytronDriver},
+        {"SteerSwitch", settings.SteerSwitch},
+        {"SteerButton", settings.SteerButton},
+        {"ShaftEncoder", settings.ShaftEncoder},
+        {"PulseCountMax", settings.PulseCountMax},
+        {"IsDanfoss", settings.IsDanfoss}};
+}
+void from_json(const json &j, AOG_SteerConfig &settings)
+{
+    j.at("InvertWAS").get_to(settings.InvertWAS);
+    j.at("IsRelayActiveHigh").get_to(settings.IsRelayActiveHigh);
+    j.at("MotorDriveDirection").get_to(settings.MotorDriveDirection);
+    j.at("SingleInputWAS").get_to(settings.SingleInputWAS);
+    j.at("CytronDriver").get_to(settings.CytronDriver);
+    j.at("SteerSwitch").get_to(settings.SteerSwitch);
+    j.at("SteerButton").get_to(settings.SteerButton);
+    j.at("ShaftEncoder").get_to(settings.ShaftEncoder);
+    j.at("PulseCountMax").get_to(settings.PulseCountMax);
+    j.at("IsDanfoss").get_to(settings.IsDanfoss);
+}
+
+void save_settings()
+{
+    json j;
+    j = {
+        {"Hardware Configuration", hardwareConfiguration},
+        {"Network Configuration", networkConfiguration},
+        {"AOG Steer Settings", aog_steerSettings},
+        {"AOG Steer Config", aog_steerConfig}};
+    store_json_file(settings_file, j);
+}
+
+void settings_task(void *)
+{
+    Log.infoln("Loading Settings...");
+
+    json settings_json;
+    if (get_json_from_file(settings_file, settings_json) == EXIT_FAILURE)
+    {
+        Log.warningln("Failed to read settings file. Using default settings.");
+        save_settings();
+    }
+    else
+    {
+        Log.infoln("Settings loaded!");
+    }
+    xEventGroupSetBits(settings_loaded_event, 0x01);
+    while (1)
+    {
+        if (xQueueReceive(aogSteerConfigQueue, &aog_steerConfig, pdMS_TO_TICKS(50)) ||
+            xQueueReceive(aogSteerSettingsQueue, &aog_steerSettings, pdMS_TO_TICKS(50)))
+        {
+            save_settings();
+        }
+    }
+}
+
+void load_settings()
+{
+    settings_loaded_event = xEventGroupCreate();
+    xTaskCreate(settings_task, "Settings Task", 4096, nullptr, 1, nullptr);
+}
