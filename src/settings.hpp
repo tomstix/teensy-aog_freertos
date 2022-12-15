@@ -72,15 +72,13 @@ struct AOG_SteerSettings
 {
 	const static uint16_t pgn = 0xFC;
 
-	uint8_t Kp = 100; // proportional gain
-	double Ki = 2.0;
-	double Kd = 2.0;
+	uint8_t kp = 100; // proportional gain
 	uint8_t highPWM = 60; // max PWM value
 	uint8_t lowPWM = 10;  // band of no action
 	uint8_t minPWM = 9;
 	uint16_t steerSensorCounts = 100;
 	int16_t wasOffset = 0;
-	float AckermanFix = 1.0; // sent as percent
+	float ackermannFix = 1.0; // sent as percent
 
 	void parse(uint8_t *buf);
 };
@@ -100,10 +98,10 @@ struct AOG_SteerConfig
 	bool SteerSwitch = 0;
 	bool SteerButton = 0;
 	bool ShaftEncoder = 0;
-	uint8_t PressureSensor = 0;
-	uint8_t CurrentSensor = 0;
+	bool PressureSensor = 0;
+	bool CurrentSensor = 0;
 	uint8_t PulseCountMax = 1;
-	uint8_t IsDanfoss = 0;
+	bool IsDanfoss = 0;
 
 	void parse(uint8_t *buf);
 };

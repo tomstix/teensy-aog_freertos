@@ -70,7 +70,7 @@ bool read_bit(const uint8_t value, const uint8_t bit)
 
 void AOG_SteerSettings::parse(uint8_t *buf)
 {
-    Kp = ((float)buf[5]);
+    kp = ((float)buf[5]);
     highPWM = buf[6];
     lowPWM = buf[7];
     minPWM = buf[8];
@@ -79,24 +79,24 @@ void AOG_SteerSettings::parse(uint8_t *buf)
     wasOffset = buf[10];
     wasOffset |= buf[11] << 8;
     wasOffset *= 2;
-    AckermanFix = (float)buf[12] / 100.0;
+    ackermannFix = (float)buf[12] / 100.0;
 
     Log.traceln("Parsed new AOG steer settings!");
 }
 void to_json(json &j, const AOG_SteerSettings &settings)
 {
     j = json{
-        {"Kp", settings.Kp},
+        {"Kp", settings.kp},
         {"highPWM", settings.highPWM},
         {"lowPWM", settings.lowPWM},
         {"minPWM", settings.minPWM},
         {"steerSensorCounts", settings.steerSensorCounts},
         {"wasOffset", settings.wasOffset},
-        {"AckermanFix", settings.AckermanFix}};
+        {"ackermannFix", settings.ackermannFix}};
 }
 void from_json(const json &j, AOG_SteerSettings &settings)
 {
-    j.at("Kp").get_to(settings.Kp);
+    j.at("Kp").get_to(settings.kp);
     j.at("highPWM").get_to(settings.highPWM);
     j.at("lowPWM").get_to(settings.lowPWM);
     j.at("minPWM").get_to(settings.minPWM);
@@ -119,7 +119,11 @@ void AOG_SteerConfig::parse(uint8_t *buf)
 
     PulseCountMax = buf[6];
 
-    IsDanfoss = buf[8];
+    sett = buf[8];
+
+    IsDanfoss = read_bit(sett, 0);
+    PressureSensor = read_bit(sett, 1);
+    CurrentSensor = read_bit(sett, 2);
 
     Log.traceln("Parsed new AOG steer config!");
 }
@@ -135,7 +139,9 @@ void to_json(json &j, const AOG_SteerConfig &settings)
         {"SteerButton", settings.SteerButton},
         {"ShaftEncoder", settings.ShaftEncoder},
         {"PulseCountMax", settings.PulseCountMax},
-        {"IsDanfoss", settings.IsDanfoss}};
+        {"IsDanfoss", settings.IsDanfoss},
+        {"PressureSensor", settings.PressureSensor},
+        {"CurrentSensor", settings.CurrentSensor}};
 }
 void from_json(const json &j, AOG_SteerConfig &settings)
 {
@@ -149,6 +155,8 @@ void from_json(const json &j, AOG_SteerConfig &settings)
     j.at("ShaftEncoder").get_to(settings.ShaftEncoder);
     j.at("PulseCountMax").get_to(settings.PulseCountMax);
     j.at("IsDanfoss").get_to(settings.IsDanfoss);
+    j.at("PressureSensor").get_to(settings.PressureSensor);
+    j.at("CurrentSensor").get_to(settings.CurrentSensor);
 }
 
 void save_settings()
