@@ -26,12 +26,17 @@ int get_json_from_file(const char* filename, json& j)
             return EXIT_FAILURE;
         }
         std::string json_str;
+        Log.verboseln("Reading from json file...");
+        int i = 0;
         while(json_file.available())
         {
             json_str += json_file.read();
+            i++;
         }
-        j = json_str;
+        Log.verboseln("Read %i bytes.", i);
+        j = json::parse(json_str);
         json_file.close();
+        Log.verboseln("%s closed.", filename);
         xSemaphoreGive(sd_mutex);
         return EXIT_SUCCESS;
     }
@@ -50,7 +55,7 @@ int store_json_file(const char* filename, const json& j)
     }
     if (FsFile json_file = SD.sdfs.open(filename, O_WRITE | O_TRUNC | O_CREAT))
     {
-        auto json_str = j.dump(4).c_str();
+        auto json_str = j.dump().c_str();
         if (!json_file.preAllocate(strlen(json_str)))
         {
             Log.errorln("Failed to allocte Memory to write %s.", filename);
@@ -95,5 +100,5 @@ void sd_card_task(void *)
 
 void init_sd_card()
 {
-    xTaskCreate(sd_card_task, "SD Card Task", 2048, nullptr, 2, nullptr);
+    xTaskCreate(sd_card_task, "SD Card Task", 4096, nullptr, 2, nullptr);
 }

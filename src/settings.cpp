@@ -14,25 +14,46 @@ EventGroupHandle_t settings_loaded_event;
 
 void to_json(json &j, const HardwareConfiguration &config)
 {
+    Log.verboseln("Making HardwareConfiguration JSON...");
     j["IMU Type"] = config.imuType;
-    j["WAS Type"] = config.wasType;
-    j["WAS Pin"] = config.teensy_was_pin_number;
-    j["Output"] = config.outputType;
+    j["WAS"]["Type"] = config.wasType;
+    j["WAS"]["Teensy Pin"] = config.teensy_was_pin_number;
+    j["WAS"]["ADS1115 Pin"] = config.ads1115_was_pin;
+    j["WAS"]["ADS1115 Differential"] = config.ads1115_differential_mode;
+    j["Output"]["Type"] = config.outputType;
+    j["Output"]["Pins"] = {
+                            {"ENA", config.output_pin_ena},
+                            {"ENB", config.output_pin_enb},
+                            {"INA", config.output_pin_ina},
+                            {"INB", config.output_pin_inb},
+                            {"PWM", config.output_pin_pwm},
+                            {"CSENSE", config.input_pin_csense}
+    };
 }
 void from_json(const json &j, HardwareConfiguration &config)
 {
     if (!j.at("IMU Type").get_to(config.imuType))
         Log.errorln("Tried parsing Invalid IMU Type from JSON");
-    if (!j.at("WAS Type").get_to(config.wasType))
+    if (!j.at("WAS").at("Type").get_to(config.wasType))
         Log.errorln("Tried parsing Invalid WAS Type from JSON");
-    if (!j.at("WAS Pin").get_to(config.teensy_was_pin_number))
+    if (!j.at("WAS").at("Teensy Pin").get_to(config.teensy_was_pin_number))
         Log.errorln("Tried parsing Invalid WAS Pin from JSON");
-    if (!j.at("Output").get_to(config.outputType))
+    j.at("WAS").at("ADS1115 Pin").get_to(config.ads1115_was_pin);
+    j.at("WAS").at("ADS1115 Differential").get_to(config.ads1115_differential_mode);
+    if (!j.at("Output").at("Type").get_to(config.outputType))
         Log.errorln("Tried parsing Invalid Output Type from JSON");
+    auto pins = j.at("Output").at("Pins");
+    pins.at("ENA").get_to(config.output_pin_ena);
+    pins.at("ENB").get_to(config.output_pin_enb);
+    pins.at("INA").get_to(config.output_pin_ina);
+    pins.at("INB").get_to(config.output_pin_inb);
+    pins.at("PWM").get_to(config.output_pin_pwm);
+    pins.at("CSENSE").get_to(config.input_pin_csense);
 }
 
 void to_json(json &j, const NetworkConfiguration &config)
 {
+    Log.verboseln("Making NetworkConfiguration JSON...");
     j["IP Address"] = {config.ip[0], config.ip[1], config.ip[2], config.ip[3]};
     j["Netmask"] = {config.netmask[0], config.netmask[1], config.netmask[2], config.netmask[3]};
     j["Gateway"] = {config.gateway[0], config.gateway[1], config.gateway[2], config.gateway[3]};
@@ -182,6 +203,10 @@ void settings_task(void *)
     }
     else
     {
+        settings_json.at("Hardware Configuration").get_to(hardwareConfiguration);
+        settings_json.at("Network Configuration").get_to(networkConfiguration);
+        settings_json.at("AOG Steer Settings").get_to(aog_steerSettings);
+        settings_json.at("AOG Steer Config").get_to(aog_steerConfig);
         Log.infoln("Settings loaded!");
     }
     xEventGroupSetBits(settings_loaded_event, 0x01);

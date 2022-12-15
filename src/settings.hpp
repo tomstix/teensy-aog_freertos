@@ -39,20 +39,28 @@ enum OutputType
 {
 	NO_OUTPUT,
 	PWM,
-	PWM2,
 	FENDT_VBUS,
 };
 NLOHMANN_JSON_SERIALIZE_ENUM(OutputType, {{NO_OUTPUT, "NO_OUTPUT"},
 										  {PWM, "PWM"},
-										  {PWM2, "PWM2"},
 										  {FENDT_VBUS, "FENDT_VBUS"}})
 
 struct HardwareConfiguration
 {
 	ImuType imuType = ImuType::NO_IMU;
 	WASType wasType = WASType::TEENSY;
-	int8_t teensy_was_pin_number = 0;
+
+	uint8_t teensy_was_pin_number = 0;
+	uint8_t ads1115_was_pin = 0;
+	bool ads1115_differential_mode = false;
+
 	OutputType outputType = OutputType::NO_OUTPUT;
+	uint8_t output_pin_ena = 27;
+	uint8_t output_pin_enb = 26;
+	uint8_t output_pin_ina = 34;
+	uint8_t output_pin_inb = 35;
+	uint8_t output_pin_pwm = 36;
+	uint8_t input_pin_csense = 24;
 };
 extern HardwareConfiguration hardwareConfiguration;
 void to_json(json &j, const HardwareConfiguration &config);
