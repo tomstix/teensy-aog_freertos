@@ -38,22 +38,22 @@ int16_t request_int16(int address, int readReg)
     return value;
 }
 
-uint8_t CMPS14::begin(int address)
+uint8_t CMPS14_TS::begin(int address)
 {
     _address = address;
     _version = request_uint8(address, 0x00);
     return _version;
 }
 
-float CMPS14::get_bearing()
+float CMPS14_TS::get_bearing()
 {
     return (float)request_uint16(_address, 0x02) / 10.0;
 }
-float CMPS14::get_pitch()
+float CMPS14_TS::get_pitch()
 {
     return (float)request_int16(_address, 0x1A) / 10.0;
 }
-float CMPS14::get_roll()
+float CMPS14_TS::get_roll()
 {
     return (float)request_int16(_address, 0x1C) / 10.0;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Wire.h>
 
-class CMPS14
+class CMPS14_TS
 {
 public:
     uint8_t begin(int address = 0x60);
