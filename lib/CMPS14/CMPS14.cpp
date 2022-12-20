@@ -6,7 +6,7 @@ uint16_t request_uint16(int address, int readReg)
     Wire.write(readReg);
     Wire.endTransmission();
     Wire.requestFrom(address, 2);
-    uint16_t value = value << 8 | Wire.read();
+    uint16_t value = Wire.read() << 8 | Wire.read();
     return value;
 }
 
