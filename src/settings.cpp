@@ -96,10 +96,8 @@ void AOG_SteerSettings::parse(uint8_t *buf)
     lowPWM = buf[7];
     minPWM = buf[8];
     steerSensorCounts = buf[9];
-    steerSensorCounts *= 2;
     wasOffset = buf[10];
     wasOffset |= buf[11] << 8;
-    wasOffset *= 2;
     ackermannFix = (float)buf[12] / 100.0;
 
     Log.traceln("Parsed new AOG steer settings!");
