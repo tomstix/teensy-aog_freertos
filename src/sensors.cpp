@@ -119,8 +119,8 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
         {
         case (WASType::TEENSY):
         {
-            uint16_t was_raw = analogRead(hardwareConfiguration.teensy_was_pin_number);
-            float was_value = (float)(was_raw - aog_steerSettings.wasOffset) / (float)aog_steerSettings.steerSensorCounts;
+            int16_t was_raw = analogRead(hardwareConfiguration.teensy_was_pin_number) - 2048;
+            float was_value = (float)(was_raw + aog_steerSettings.wasOffset) / (float)aog_steerSettings.steerSensorCounts;
             was_value = aog_steerConfig.InvertWAS ? -was_value : was_value;
             if (was_value < 0)
                 was_value *= aog_steerSettings.ackermannFix;
@@ -129,9 +129,9 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
         }
         case (WASType::ADS1115):
         {
-            uint16_t was_raw = ads.getLastConversionResults();
-            float was_value = (float)(was_raw - aog_steerSettings.wasOffset * 2) / (float)(aog_steerSettings.steerSensorCounts * 2);
-            was_value = aog_steerConfig.InvertWAS ? -was_value : was_value;
+            int16_t was_raw = ads.getLastConversionResults() - 13200;
+            was_raw = aog_steerConfig.InvertWAS ? -was_raw : was_raw;
+            float was_value = (float)(was_raw + aog_steerSettings.wasOffset * 2) / (float)(aog_steerSettings.steerSensorCounts * 2);
             if (was_value < 0)
                 was_value *= aog_steerSettings.ackermannFix;
             xQueueOverwrite(queueWAStoAutosteer, &was_value);
