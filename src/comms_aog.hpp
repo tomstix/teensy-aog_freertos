@@ -8,6 +8,7 @@
 extern QueueHandle_t aogSteerDataQueue;
 extern QueueHandle_t aogSteerConfigQueue;
 extern QueueHandle_t aogSteerSettingsQueue;
+extern QueueHandle_t aogFromAutosteerQueue;
 
 struct AOG_SteerData
 {

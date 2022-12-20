@@ -9,6 +9,7 @@ uint8_t aog_rx_buf[256];
 QueueHandle_t aogSteerDataQueue;
 QueueHandle_t aogSteerConfigQueue;
 QueueHandle_t aogSteerSettingsQueue;
+QueueHandle_t aogFromAutosteerQueue;
 
 using namespace qindesign::network;
 
@@ -122,6 +123,11 @@ void aog_udp_task(void *)
                     {
                         Log.warningln("AOG Steer Data Queue Full!");
                     }
+                    AOG_FromAutoSteer aogFromAutosteer;
+                    xQueueReceive(aogFromAutosteerQueue, &aogFromAutosteer, pdMS_TO_TICKS(10));
+                    uint8_t buf[14];
+                    aogFromAutosteer.get_buf(buf, sizeof(buf));
+                    aogUDP.send(Ethernet.broadcastIP(), aog_send_port, buf, sizeof(buf));
                     break;
                 }
                 case (AOG_SteerConfig::pgn):
@@ -151,13 +157,17 @@ void init_aog_comms()
 {
     aogSteerDataQueue = xQueueCreate(1, sizeof(AOG_SteerData));
     if (aogSteerDataQueue == NULL)
-        Log.errorln("Faile to create aogSteerDataQueue!");
+        Log.errorln("Failed to create aogSteerDataQueue!");
     aogSteerSettingsQueue = xQueueCreate(1, sizeof(AOG_SteerSettings));
     if (aogSteerSettingsQueue == NULL)
-        Log.errorln("Faile to create aogSteerSettingsQueue!");
+        Log.errorln("Failed to create aogSteerSettingsQueue!");
     aogSteerConfigQueue = xQueueCreate(1, sizeof(AOG_SteerConfig));
     if (aogSteerConfigQueue == NULL)
-        Log.errorln("Faile to create aogSteerDataQueue!");
-    xTaskCreate(ethernet_task, "Ethernet Task", 1024, nullptr, 3, nullptr);
+        Log.errorln("Failed to create aogSteerDataQueue!");
+    aogFromAutosteerQueue = xQueueCreate(1, sizeof(AOG_FromAutoSteer));
+    if (aogFromAutosteerQueue == NULL)
+        Log.errorln("Failed to create aogFromAutosteerQueue!");
+
+    xTaskCreate(ethernet_task, "Ethernet Task", 1024, nullptr, 4, nullptr);
     xTaskCreate(aog_udp_task, "AOG UDP Task", 2048, nullptr, 3, nullptr);
 }
