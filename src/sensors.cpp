@@ -15,6 +15,10 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
     xEventGroupWaitBits(settings_loaded_event, 0x01, pdFALSE, pdFALSE, portMAX_DELAY); // wait for settings to be loaded
     Log.infoln("Starting Sensors Task...");
 
+    TickType_t imu_poll_interval = pdMS_TO_TICKS(10);
+    TickType_t last_imu_poll = xTaskGetTickCount();
+    IMUData imuData;
+
     switch (hardwareConfiguration.wasType)
     {
     case (WASType::TEENSY):
@@ -140,7 +144,22 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
         default:
             break;
         }
-        vTaskDelay(pdMS_TO_TICKS(3));
+
+        if (xTaskGetTickCount() - last_imu_poll > imu_poll_interval)
+        {
+            last_imu_poll = xTaskGetTickCount();
+            switch (hardwareConfiguration.imuType)
+            {
+            case (ImuType::CMPS14):
+            {
+                imuData.yaw = cmps.get_bearing();
+                imuData.pitch = cmps.get_pitch();
+                imuData.roll = cmps.get_roll();
+                xQueueOverwrite(queueIMUtoGNSS, &imuData);
+            }
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(2));
     }
 }
 
