@@ -29,6 +29,10 @@ void to_json(json &j, const HardwareConfiguration &config)
                             {"PWM", config.output_pin_pwm},
                             {"CSENSE", config.input_pin_csense}
     };
+    j["Switches"]["Steer Switch Type"] = config.steerswitchType;
+    j["Switches"]["Steer Switch Pin"] = config.steerswitch_pin;
+    j["Switches"]["Work Switch Type"] = config.workswitchType;
+    j["Switches"]["Work Switch Pin"] = config.workswitch_pin;
 }
 void from_json(const json &j, HardwareConfiguration &config)
 {
@@ -49,6 +53,12 @@ void from_json(const json &j, HardwareConfiguration &config)
     pins.at("INB").get_to(config.output_pin_inb);
     pins.at("PWM").get_to(config.output_pin_pwm);
     pins.at("CSENSE").get_to(config.input_pin_csense);
+
+    auto switches = j.at("Switches");
+    switches.at("Steer Switch Type").get_to(config.steerswitchType);
+    switches.at("Steer Switch Pin").get_to(config.steerswitch_pin);
+    switches.at("Work Switch Type").get_to(config.workswitchType);
+    switches.at("Work Switch Pin").get_to(config.workswitch_pin);
 }
 
 void to_json(json &j, const NetworkConfiguration &config)

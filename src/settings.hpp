@@ -28,12 +28,12 @@ enum WASType
 {
 	NO_WAS,
 	ADS1115,
-	ISOBUS,
+	ISOBUS_GMS,
 	TEENSY
 };
 NLOHMANN_JSON_SERIALIZE_ENUM(WASType, {{NO_WAS, "NO_WAS"},
 									   {ADS1115, "ADS1115"},
-									   {ISOBUS, "ISOBUS"},
+									   {ISOBUS_GMS, "ISOBUS"},
 									   {TEENSY, "TEENSY"}})
 enum OutputType
 {
@@ -45,10 +45,39 @@ NLOHMANN_JSON_SERIALIZE_ENUM(OutputType, {{NO_OUTPUT, "NO_OUTPUT"},
 										  {PWM, "PWM"},
 										  {FENDT_VBUS, "FENDT_VBUS"}})
 
+enum SteerswitchType
+{
+	NO_STEERSWITCH,
+	STEERSWITCH_PIN,
+	STEERSWITCH_ISOBUS
+};
+NLOHMANN_JSON_SERIALIZE_ENUM(SteerswitchType, {{NO_STEERSWITCH, "NO_STEERSWITCH"},
+											   {STEERSWITCH_PIN, "STEERSWITCH_PIN"},
+											   {STEERSWITCH_ISOBUS, "STEERSWITCH_ISOBUS"}})
+
+enum WorkswitchType
+{
+	NO_WORKSWITCH,
+	WORKSWITCH_PIN,
+	WORKSWITCH_ANALOG,
+	ISOBUS_HITCH,
+	ISOBUS_PTO
+};
+NLOHMANN_JSON_SERIALIZE_ENUM(WorkswitchType, {{NO_WORKSWITCH, "NO_WORKSWITCH"},
+											  {WORKSWITCH_PIN, "WORKSWITCH_PIN"},
+											  {WORKSWITCH_ANALOG, "WORKSWITCH_ANALOG"},
+											  {ISOBUS_HITCH, "ISOBUS_HITCH"},
+											  {ISOBUS_PTO, "ISOBUS_PTO"}})
+
 struct HardwareConfiguration
 {
 	ImuType imuType = ImuType::NO_IMU;
 	WASType wasType = WASType::TEENSY;
+	SteerswitchType steerswitchType = SteerswitchType::NO_STEERSWITCH;
+	WorkswitchType workswitchType = WorkswitchType::NO_WORKSWITCH;
+
+	uint8_t steerswitch_pin = 0;
+	uint8_t workswitch_pin = 0;
 
 	uint8_t teensy_was_pin_number = 0;
 	uint8_t ads1115_was_pin = 0;
@@ -80,7 +109,7 @@ struct AOG_SteerSettings
 {
 	const static uint16_t pgn = 0xFC;
 
-	uint8_t kp = 100; // proportional gain
+	uint8_t kp = 100;	  // proportional gain
 	uint8_t highPWM = 60; // max PWM value
 	uint8_t lowPWM = 10;  // band of no action
 	uint8_t minPWM = 9;
