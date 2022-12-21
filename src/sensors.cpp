@@ -15,6 +15,7 @@ Adafruit_NXPSensorFusion sensorfusion;
 
 QueueHandle_t queueWAStoAutosteer;
 QueueHandle_t imuToGNSSQueue;
+EventGroupHandle_t switchesEventGroup;
 
 float mag_offsets[3] = {-5.75F, -8.88F, 9.33F};
 // Soft iron error compensation matrix
@@ -155,16 +156,6 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
     }
     }
 
-    if (hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_PIN ||
-        hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_ANALOG)
-    {
-        pinMode(hardwareConfiguration.workswitch_pin, arduino::OUTPUT);
-    }
-    if (hardwareConfiguration.steerswitchType == SteerswitchType::STEERSWITCH_PIN)
-    {
-        pinMode(hardwareConfiguration.steerswitch_pin, arduino::OUTPUT);
-    }
-
     while (1)
     {
         last_sensors_task_t = xTaskGetTickCount();
@@ -244,12 +235,6 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
             break;
         }
 
-        
-        if (hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_PIN)
-        {
-
-        }
-
         xTaskDelayUntil(&last_sensors_task_t, sensors_task_interval);
     }
 }
@@ -258,6 +243,16 @@ void init_sensors()
 {
     Wire.begin(400000);
     queueWAStoAutosteer = xQueueCreate(1, sizeof(float));
+    if (queueWAStoAutosteer == nullptr)
+    {
+        Log.errorln("Failed to create queueWAStoAutosteer!");
+    }
     imuToGNSSQueue = xQueueCreate(1, sizeof(IMUData));
+    if (imuToGNSSQueue == nullptr)
+    {
+        Log.errorln("Failed to create imuToGNSSQueue!");
+    }
+    switchesEventGroup = xEventGroupCreate();
+    xEventGroupSetBits(switchesEventGroup, 0x03);
     xTaskCreate(sensors_task, "Sensors Task", 1024, nullptr, 4, nullptr);
 }

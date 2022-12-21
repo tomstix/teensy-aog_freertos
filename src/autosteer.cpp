@@ -33,7 +33,7 @@ void autosteer_task(void *)
     {
         if (hardwareConfiguration.steerswitch_pin != 0)
         {
-            pinMode(hardwareConfiguration.steerswitch_pin, arduino::INPUT);
+            pinMode(hardwareConfiguration.steerswitch_pin, arduino::INPUT_PULLUP);
             Log.verboseln("Steerswitch set to Pin %u.", hardwareConfiguration.steerswitch_pin);
         }
         else
@@ -41,13 +41,12 @@ void autosteer_task(void *)
             Log.warningln("Steerswitch Pin selected but Pin is 0!");
         }
     }
-    if (hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_PIN
-        || hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_ANALOG)
+    if (hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_PIN || hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_ANALOG)
     {
         if (hardwareConfiguration.workswitch_pin != 0)
         {
-            pinMode(hardwareConfiguration.workswitch_pin, arduino::INPUT);
-            Log.verboseln("Workswitch set to Pin %u.", hardwareConfiguration.steerswitch_pin);
+            pinMode(hardwareConfiguration.workswitch_pin, arduino::INPUT_PULLUP);
+            Log.verboseln("Workswitch set to Pin %u.", hardwareConfiguration.workswitch_pin);
         }
         else
         {
@@ -70,7 +69,7 @@ void autosteer_task(void *)
             steerData.guidanceStatus = false;
         }
 
-        //Steer
+        // Steer
         switch (hardwareConfiguration.outputType)
         {
         case (OutputType::PWM):
@@ -114,7 +113,58 @@ void autosteer_task(void *)
             break;
         }
 
-        //Read Switches
+        // Read Switches
+        if (hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_PIN)
+        {
+            if (digitalReadFast(hardwareConfiguration.workswitch_pin) == arduino::LOW)
+            {
+                xEventGroupClearBits(switchesEventGroup, 0x01);
+            }
+            else
+            {
+                xEventGroupSetBits(switchesEventGroup, 0x01);
+            }
+        }
+
+        if (hardwareConfiguration.steerswitchType == SteerswitchType::STEERSWITCH_PIN)
+        {
+            static uint32_t last_steerswitch_ms;
+            bool steerswitch_state = (xEventGroupGetBits(switchesEventGroup) >> 1) & 0x01;
+            auto set_steerswitch = [](bool on)
+            {
+                last_steerswitch_ms = millis();
+                // Steerswitch at bit 1
+                if (on)
+                {
+                    xEventGroupClearBits(switchesEventGroup, 0x02);
+                    Log.verboseln("Steerswitch on!");
+                }
+                else
+                {
+                    xEventGroupSetBits(switchesEventGroup, 0x02);
+                    Log.verboseln("Steerswitch off!");
+                }
+            };
+            if (aog_steerConfig.SteerButton)
+            {
+                static bool previous_state;
+                bool pressed = digitalReadFast(hardwareConfiguration.steerswitch_pin) == arduino::LOW;
+                if (pressed && (pressed != previous_state) && (millis() - last_steerswitch_ms) > 50)
+                {
+                    set_steerswitch(steerswitch_state);
+                }
+                previous_state = pressed;
+            }
+            else if (aog_steerConfig.SteerSwitch)
+            {
+                if (digitalReadFast(hardwareConfiguration.steerswitch_pin) != steerswitch_state)
+                {
+                    set_steerswitch(steerswitch_state);
+                }
+            }
+        }
+
+        aogFromAutosteer.switches = (uint8_t)xEventGroupGetBits(switchesEventGroup);
 
         xQueueOverwrite(aogFromAutosteerQueue, &aogFromAutosteer);
 
