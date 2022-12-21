@@ -4,7 +4,7 @@
 #include <queue.h>
 
 extern QueueHandle_t queueWAStoAutosteer;
-extern QueueHandle_t queueIMUtoGNSS;
+extern QueueHandle_t imuToGNSSQueue;
 
 struct IMUData
 {

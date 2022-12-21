@@ -4,6 +4,7 @@
 #include "sd_card.hpp"
 #include "autosteer.hpp"
 #include "sensors.hpp"
+#include "gnss.hpp"
 
 void heartbeat_task(void *)
 {
@@ -39,6 +40,7 @@ void setup()
 
   init_sd_card();
   load_settings();
+  init_gnss();
   init_aog_comms();
   init_sensors();
   init_autosteer();

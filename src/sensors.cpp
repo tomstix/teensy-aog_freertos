@@ -8,7 +8,7 @@ Adafruit_ADS1115 ads;
 CMPS14_TS cmps;
 
 QueueHandle_t queueWAStoAutosteer;
-QueueHandle_t queueIMUtoGNSS;
+QueueHandle_t imuToGNSSQueue;
 
 void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
 {
@@ -155,8 +155,10 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
                 imuData.yaw = cmps.get_bearing();
                 imuData.pitch = cmps.get_pitch();
                 imuData.roll = cmps.get_roll();
-                xQueueOverwrite(queueIMUtoGNSS, &imuData);
+                xQueueOverwrite(imuToGNSSQueue, &imuData);
             }
+            default:
+                break;
             }
         }
         vTaskDelay(pdMS_TO_TICKS(2));
@@ -167,6 +169,6 @@ void init_sensors()
 {
     Wire.begin(400000);
     queueWAStoAutosteer = xQueueCreate(1, sizeof(float));
-    queueIMUtoGNSS = xQueueCreate(1, sizeof(IMUData));
+    imuToGNSSQueue = xQueueCreate(1, sizeof(IMUData));
     xTaskCreate(sensors_task, "Sensors Task", 1024, nullptr, 4, nullptr);
 }

@@ -1,15 +1,19 @@
 #include "comms_aog.hpp"
 #include "settings.hpp"
 
-const uint32_t aog_receive_port_steer = 8888; // Port to listen to
-const uint32_t aog_send_port = 9999;          // Port to send to
+const uint32_t AOG_PORT_STEER_RECEIVE = 8888; // Port to listen to
+const uint32_t AOG_SEND_PORT = 9999;          // Port to send to
+const uint32_t AOG_NTRIP_PORT = 2233;         // Port to listen for NMEA
 
 uint8_t aog_rx_buf[256];
+uint8_t ntrip_buf[512];
 
 QueueHandle_t aogSteerDataQueue;
 QueueHandle_t aogSteerConfigQueue;
 QueueHandle_t aogSteerSettingsQueue;
 QueueHandle_t aogFromAutosteerQueue;
+MessageBufferHandle_t sendNMEABuffer;
+StreamBufferHandle_t ntripStreamBuffer;
 
 using namespace qindesign::network;
 
@@ -95,19 +99,29 @@ void aog_udp_task(void *)
 {
     xEventGroupWaitBits(settings_loaded_event, 0x01, pdFALSE, pdFALSE, portMAX_DELAY);
     while (!Ethernet.linkState())
-        ;
+        vTaskDelay(1);
     EthernetUDP aogUDP(10);
-    aogUDP.begin(aog_receive_port_steer);
+    aogUDP.begin(AOG_PORT_STEER_RECEIVE);
+    EthernetUDP ntripUDP(10);
+    ntripUDP.begin(AOG_NTRIP_PORT);
+
     Log.infoln("AOG UDP Task started!");
 
     AOG_SteerData steerData;
     AOG_SteerConfig steerConfig;
     AOG_SteerSettings steerSettings;
 
+    char panda[256];
+
     while (1)
     {
+        if (xMessageBufferReceive(sendNMEABuffer, panda, 256, pdMS_TO_TICKS(10)))
+        {
+            aogUDP.send(Ethernet.broadcastIP(), AOG_SEND_PORT, (const uint8_t *)panda, strlen(panda));
+        }
+
         auto aog_packet_size = aogUDP.parsePacket();
-        if (aog_packet_size > 0)
+        if (aog_packet_size >= 0)
         {
             aogUDP.read(aog_rx_buf, sizeof(aog_rx_buf));
             if (aog_rx_buf[0] == 0x80 && aog_rx_buf[1] == 0x81 && aog_rx_buf[2] == 0x7F)
@@ -127,7 +141,7 @@ void aog_udp_task(void *)
                     xQueueReceive(aogFromAutosteerQueue, &aogFromAutosteer, pdMS_TO_TICKS(10));
                     uint8_t buf[14];
                     aogFromAutosteer.get_buf(buf, sizeof(buf));
-                    aogUDP.send(Ethernet.broadcastIP(), aog_send_port, buf, sizeof(buf));
+                    aogUDP.send(Ethernet.broadcastIP(), AOG_SEND_PORT, buf, sizeof(buf));
                     break;
                 }
                 case (AOG_SteerConfig::pgn):
@@ -149,6 +163,13 @@ void aog_udp_task(void *)
                 Log.warningln("Received AOG UDP packet, that doesn't match 0x80817F - scheme.");
             }
         }
+
+        auto ntrip_packetsize = ntripUDP.parsePacket();
+        if (ntrip_packetsize >= 0)
+        {
+            ntripUDP.read(ntrip_buf, sizeof(ntrip_buf));
+            xStreamBufferSend(ntripStreamBuffer, &ntrip_buf, ntrip_packetsize, pdMS_TO_TICKS(100));
+        }
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
@@ -167,6 +188,12 @@ void init_aog_comms()
     aogFromAutosteerQueue = xQueueCreate(1, sizeof(AOG_FromAutoSteer));
     if (aogFromAutosteerQueue == NULL)
         Log.errorln("Failed to create aogFromAutosteerQueue!");
+    sendNMEABuffer = xMessageBufferCreate(512);
+    if (sendNMEABuffer == NULL)
+        Log.errorln("Failed to create sendNMEABuffer!");
+    ntripStreamBuffer = xStreamBufferCreate(512, 16);
+    if (ntripStreamBuffer == NULL)
+        Log.errorln("Failed to create ntripStreamBuffer!");
 
     xTaskCreate(ethernet_task, "Ethernet Task", 1024, nullptr, 4, nullptr);
     xTaskCreate(aog_udp_task, "AOG UDP Task", 2048, nullptr, 3, nullptr);

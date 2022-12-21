@@ -3,12 +3,15 @@
 #include "main.hpp"
 
 #include <queue.h>
+#include <message_buffer.h>
 #include <QNEthernet.h>
 
 extern QueueHandle_t aogSteerDataQueue;
 extern QueueHandle_t aogSteerConfigQueue;
 extern QueueHandle_t aogSteerSettingsQueue;
 extern QueueHandle_t aogFromAutosteerQueue;
+extern MessageBufferHandle_t sendNMEABuffer;
+extern StreamBufferHandle_t ntripStreamBuffer;
 
 struct AOG_SteerData
 {
