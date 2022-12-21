@@ -20,6 +20,7 @@ struct AOG_SteerData
     AOG_SteerData();
     AOG_SteerData(const uint8_t* buf, size_t len);
 
+    uint32_t timestamp_ms = 0;
     float speed = 0.0;
     bool guidanceStatus = 0;
     float steerAngleSetpoint = 0.0;

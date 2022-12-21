@@ -4,6 +4,8 @@
 #include "autosteer.hpp"
 #include "sensors.hpp"
 
+uint16_t steer_timeout_ms = 1000;
+
 void autosteer_task(void *)
 {
     xEventGroupWaitBits(settings_loaded_event, 0x01, pdFALSE, pdFALSE, portMAX_DELAY);
@@ -62,6 +64,11 @@ void autosteer_task(void *)
         xQueueReceive(queueWAStoAutosteer, &angle_act, pdMS_TO_TICKS(3));
 
         aogFromAutosteer.steer_angle = angle_act;
+
+        if (millis() - steerData.timestamp_ms > steer_timeout_ms)
+        {
+            steerData.guidanceStatus = false;
+        }
 
         //Steer
         switch (hardwareConfiguration.outputType)

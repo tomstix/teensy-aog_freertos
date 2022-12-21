@@ -133,6 +133,7 @@ void aog_udp_task(void *)
                 {
                     if (steerData.parse(aog_rx_buf, aog_packet_size) != EXIT_SUCCESS)
                         break;
+                    steerData.timestamp_ms = millis();
                     if (xQueueSend(aogSteerDataQueue, &steerData, 0) != pdTRUE)
                     {
                         Log.warningln("AOG Steer Data Queue Full!");
