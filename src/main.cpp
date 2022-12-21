@@ -29,12 +29,14 @@ void setup()
   pinMode(13, arduino::OUTPUT);
   digitalWrite(13, 1);
   Serial.begin(115200);
-  while(!Serial || (millis() < 5000));
+  while(!Serial & (millis() < 5000));
   digitalWrite(13, 0);
   Log.begin(LOG_LEVEL_VERBOSE, &Serial);
 
   Log.infoln("Starting teensy-aog Version %u.%u ...", VERSION_MAJOR, VERSION_MINOR);
   Log.infoln("Running FreeRTOS kernel " tskKERNEL_VERSION_NUMBER ". Built by gcc " __VERSION__ ".");
+
+  Serial.flush();
 
   xTaskCreate(heartbeat_task, "Heartbeat", 128, nullptr, 1, nullptr);
 
