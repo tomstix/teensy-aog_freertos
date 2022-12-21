@@ -191,7 +191,7 @@ void init_aog_comms()
     sendNMEABuffer = xMessageBufferCreate(512);
     if (sendNMEABuffer == NULL)
         Log.errorln("Failed to create sendNMEABuffer!");
-    ntripStreamBuffer = xStreamBufferCreate(512, 16);
+    ntripStreamBuffer = xStreamBufferCreate(1024, 16);
     if (ntripStreamBuffer == NULL)
         Log.errorln("Failed to create ntripStreamBuffer!");
 

@@ -46,18 +46,18 @@ void gnss_task(void *)
     {
         gnss.checkUblox();
         gnss.checkCallbacks();
-        if (xStreamBufferIsEmpty(ntripStreamBuffer) == pdFALSE)
+        if ((xStreamBufferIsEmpty(ntripStreamBuffer) == pdFALSE) && GNSS_PORT.availableForWrite())
         {
             auto available = GNSS_PORT.availableForWrite();
             uint8_t buf[available];
-            xStreamBufferReceive(ntripStreamBuffer, buf, available, 0);
-            GNSS_PORT.write(buf, available);
+            auto written = xStreamBufferReceive(ntripStreamBuffer, buf, available, 0);
+            GNSS_PORT.write(buf, written);
         }
-        vTaskDelay(1);
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
 void init_gnss()
 {
-    xTaskCreate(gnss_task, "GNSS Task", 2048, nullptr, 4, nullptr);
+    xTaskCreate(gnss_task, "GNSS Task", 4096, nullptr, 5, nullptr);
 }
