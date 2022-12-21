@@ -1,11 +1,11 @@
 #include "panda.h"
 
-void makePANDA(char* panda, size_t len, UBX_NAV_PVT_data_t *pvt, int8_t latHp, int8_t lonHp, float yaw, float pitch, float roll)
+void makePANDA(char *panda, size_t len, UBX_NAV_PVT_data_t *pvt, int8_t latHp, int8_t lonHp, float yaw, float pitch, float roll)
 {
-	double lat = ((double)pvt->lat) / 10000000.0;		  // Convert latitude from degrees * 10^-7 to degrees
-	lat += ((double)latHp) / 1000000000.0;  // Now add the high resolution component (degrees * 10^-9 )
-	double lon = ((double)pvt->lon) / 10000000.0;	  // Convert longitude from degrees * 10^-7 to degrees
-	lon += ((double)lonHp) / 1000000000.0; // Now add the high resolution component (degrees * 10^-9 )
+	double lat = ((double)pvt->lat) / 10000000.0; // Convert latitude from degrees * 10^-7 to degrees
+	lat += ((double)latHp) / 1000000000.0;		  // Now add the high resolution component (degrees * 10^-9 )
+	double lon = ((double)pvt->lon) / 10000000.0; // Convert longitude from degrees * 10^-7 to degrees
+	lon += ((double)lonHp) / 1000000000.0;		  // Now add the high resolution component (degrees * 10^-9 )
 
 	uint8_t latDegrees = lat;
 	double latMinutes = ((lat) - (double)latDegrees) * 60.0f;
@@ -34,6 +34,47 @@ void makePANDA(char* panda, size_t len, UBX_NAV_PVT_data_t *pvt, int8_t latHp, i
 		fixType = 4;
 	}
 
+	float age = 0.0;
+	uint8_t lastCorrectionAge = pvt->flags3.all >> 1;
+	switch (lastCorrectionAge)
+	{
+	case 1:
+		age = 1.0;
+		break;
+	case 2:
+		age = 2.0;
+		break;
+	case 3:
+		age = 5.0;
+		break;
+	case 4:
+		age = 10.0;
+		break;
+	case 5:
+		age = 15.0;
+		break;
+	case 6:
+		age = 20.0;
+		break;
+	case 7:
+		age = 30.0;
+		break;
+	case 8:
+		age = 45.0;
+		break;
+	case 9:
+		age = 60.0;
+		break;
+	case 10:
+		age = 90.0;
+		break;
+	case 11:
+		age = 120.0;
+		break;
+	default:
+		break;
+	}
+
 	snprintf(panda, len, "$PANDA,%02u%02u%02u.%02u,%02u%2.8f,%c,%03u%3.8f,%c,%u,%u,%.1f,%.2f,%.1f,%.1f,%04u,%02i,%02i,%02u*",
 			 pvt->hour,
 			 pvt->min,
@@ -49,7 +90,7 @@ void makePANDA(char* panda, size_t len, UBX_NAV_PVT_data_t *pvt, int8_t latHp, i
 			 pvt->numSV,
 			 (float)pvt->pDOP * 0.01,
 			 (float)pvt->hMSL / 1000.0,
-			 0.0,
+			 age,
 			 (float)pvt->gSpeed * 0.00194384,
 			 (uint16_t)(yaw * 10),
 			 (int16_t)(roll * 10),
