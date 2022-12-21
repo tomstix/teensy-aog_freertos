@@ -1,6 +1,6 @@
 #include "panda.h"
 
-void makePANDA(char *panda, size_t len, UBX_NAV_PVT_data_t *pvt, int8_t latHp, int8_t lonHp, float yaw, float pitch, float roll)
+void makePANDA(char *panda, const size_t len, const UBX_NAV_PVT_data_t *pvt, const int8_t latHp, const int8_t lonHp, const float yaw, const float pitch, const float roll)
 {
 	double lat = ((double)pvt->lat) / 10000000.0; // Convert latitude from degrees * 10^-7 to degrees
 	lat += ((double)latHp) / 1000000000.0;		  // Now add the high resolution component (degrees * 10^-9 )

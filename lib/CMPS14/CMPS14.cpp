@@ -1,6 +1,6 @@
 #include "CMPS14.h"
 
-uint16_t request_uint16(int address, int readReg)
+uint16_t request_uint16(const int address, const int readReg)
 {
     Wire.beginTransmission(address);
     Wire.write(readReg);
@@ -10,7 +10,7 @@ uint16_t request_uint16(int address, int readReg)
     return value;
 }
 
-int8_t request_int8(int address, int readReg)
+int8_t request_int8(const int address, const int readReg)
 {
     Wire.beginTransmission(address);
     Wire.write(readReg);
@@ -19,7 +19,7 @@ int8_t request_int8(int address, int readReg)
     return Wire.read();
 }
 
-uint8_t request_uint8(int address, int readReg)
+uint8_t request_uint8(const int address, const int readReg)
 {
     Wire.beginTransmission(address);
     Wire.write(readReg);
@@ -28,7 +28,7 @@ uint8_t request_uint8(int address, int readReg)
     return Wire.read();
 }
 
-int16_t request_int16(int address, int readReg)
+int16_t request_int16(const int address, const int readReg)
 {
     Wire.beginTransmission(address);
     Wire.write(readReg);
@@ -38,7 +38,7 @@ int16_t request_int16(int address, int readReg)
     return value;
 }
 
-uint8_t CMPS14_TS::begin(int address)
+uint8_t CMPS14_TS::begin(const int address)
 {
     _address = address;
     _version = request_uint8(address, 0x00);
