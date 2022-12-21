@@ -33,7 +33,7 @@ enum WASType
 };
 NLOHMANN_JSON_SERIALIZE_ENUM(WASType, {{NO_WAS, "NO_WAS"},
 									   {ADS1115, "ADS1115"},
-									   {ISOBUS_GMS, "ISOBUS"},
+									   {ISOBUS_GMS, "ISOBUS_GMS"},
 									   {TEENSY, "TEENSY"}})
 enum OutputType
 {
