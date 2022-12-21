@@ -26,7 +26,7 @@ void heartbeat_task(void *)
 
 void setup()
 {
-  pinMode(13, arduino::OUTPUT);
+  pinMode(13, OUTPUT);
   digitalWrite(13, 1);
   Serial.begin(115200);
   while(!Serial & (millis() < 5000));

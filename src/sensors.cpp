@@ -50,7 +50,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
         }
         else
         {
-            pinMode(hardwareConfiguration.teensy_was_pin_number, arduino::INPUT);
+            pinMode(hardwareConfiguration.teensy_was_pin_number, INPUT);
             analogReadResolution(12);
             Log.traceln("WAS Input set to Teensy pin %u", hardwareConfiguration.teensy_was_pin_number);
         }
