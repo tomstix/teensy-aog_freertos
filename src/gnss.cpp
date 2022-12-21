@@ -31,9 +31,11 @@ void gnss_task(void *)
     GNSS_PORT.begin(115200);
     if (gnss.begin(GNSS_PORT) == false)
     {
-        Log.fatalln("Failed to initialize GNSS!");
-        while (1)
-            ;
+        Log.errorln("Failed to initialize GNSS! Trying again...");
+        if (gnss.begin(GNSS_PORT, 5000) == false)
+        {
+            Log.fatalln("Failed to initialize GNSS!");
+        }
     }
     Log.traceln("GNSS initialized!");
     gnss.setUART1Output(COM_TYPE_UBX);
