@@ -11,7 +11,7 @@ using json = nlohmann::json;
 #include <QNEthernet.h>
 using namespace qindesign::network;
 
-const char settings_file[] = "settings.json";
+const char SETTINGS_FILE_NAME[] = "settings.json";
 
 enum ImuType
 {

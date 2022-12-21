@@ -4,7 +4,7 @@
 #include "autosteer.hpp"
 #include "sensors.hpp"
 
-uint16_t steer_timeout_ms = 1000;
+uint16_t STEER_TIMEOUT_MS = 1000;
 
 void autosteer_task(void *)
 {
@@ -54,7 +54,7 @@ void autosteer_task(void *)
         }
     }
 
-    TickType_t time_interval = pdMS_TO_TICKS(10);
+    TickType_t TASK_INTERVAL_AUTOSTEER = pdMS_TO_TICKS(10);
     auto lastWakeTime = xTaskGetTickCount();
     while (1)
     {
@@ -64,7 +64,7 @@ void autosteer_task(void *)
 
         aogFromAutosteer.steer_angle = angle_act;
 
-        if (millis() - steerData.timestamp_ms > steer_timeout_ms)
+        if (millis() - steerData.timestamp_ms > STEER_TIMEOUT_MS)
         {
             steerData.guidanceStatus = false;
         }
@@ -168,7 +168,7 @@ void autosteer_task(void *)
 
         xQueueOverwrite(aogFromAutosteerQueue, &aogFromAutosteer);
 
-        xTaskDelayUntil(&lastWakeTime, time_interval);
+        xTaskDelayUntil(&lastWakeTime, TASK_INTERVAL_AUTOSTEER);
     }
 }
 

@@ -1,12 +1,9 @@
 #include "comms_aog.hpp"
 #include "settings.hpp"
 
-const uint32_t AOG_PORT_STEER_RECEIVE = 8888; // Port to listen to
-const uint32_t AOG_SEND_PORT = 9999;          // Port to send to
-const uint32_t AOG_NTRIP_PORT = 2233;         // Port to listen for NMEA
-
-uint8_t aog_rx_buf[256];
-uint8_t ntrip_buf[512];
+constexpr uint32_t AOG_PORT_STEER_RECEIVE = 8888; // Port to listen to
+constexpr uint32_t AOG_SEND_PORT = 9999;          // Port to send to
+constexpr uint32_t AOG_NTRIP_PORT = 2233;         // Port to listen for NMEA
 
 QueueHandle_t aogSteerDataQueue;
 QueueHandle_t aogSteerConfigQueue;
@@ -123,6 +120,7 @@ void aog_udp_task(void *)
         auto aog_packet_size = aogUDP.parsePacket();
         if (aog_packet_size >= 0)
         {
+            static uint8_t aog_rx_buf[256];
             aogUDP.read(aog_rx_buf, sizeof(aog_rx_buf));
             if (aog_rx_buf[0] == 0x80 && aog_rx_buf[1] == 0x81 && aog_rx_buf[2] == 0x7F)
             {
@@ -168,6 +166,7 @@ void aog_udp_task(void *)
         auto ntrip_packetsize = ntripUDP.parsePacket();
         if (ntrip_packetsize >= 0)
         {
+            static uint8_t ntrip_buf[512];
             ntripUDP.read(ntrip_buf, sizeof(ntrip_buf));
             xStreamBufferSend(ntripStreamBuffer, &ntrip_buf, ntrip_packetsize, pdMS_TO_TICKS(100));
         }

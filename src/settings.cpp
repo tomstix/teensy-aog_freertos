@@ -196,7 +196,7 @@ void save_settings()
         {"Network Configuration", networkConfiguration},
         {"AOG Steer Settings", aog_steerSettings},
         {"AOG Steer Config", aog_steerConfig}};
-    store_json_file(settings_file, j);
+    store_json_file(SETTINGS_FILE_NAME, j);
 }
 
 void settings_task(void *)
@@ -204,7 +204,7 @@ void settings_task(void *)
     Log.infoln("Loading Settings...");
 
     json settings_json;
-    if (get_json_from_file(settings_file, settings_json) == EXIT_FAILURE)
+    if (get_json_from_file(SETTINGS_FILE_NAME, settings_json) == EXIT_FAILURE)
     {
         Log.warningln("Failed to read settings file. Using default settings.");
         save_settings();
