@@ -101,7 +101,7 @@ bool read_bit(const uint8_t value, const uint8_t bit)
 
 void AOG_SteerSettings::parse(uint8_t *buf)
 {
-    kp = ((float)buf[5]);
+    kp = buf[5];
     highPWM = buf[6];
     lowPWM = buf[7];
     minPWM = buf[8];

@@ -51,7 +51,7 @@ int AOG_FromAutoSteer::get_buf(uint8_t *buf, const size_t len)
     buf[4] = 8;
     int16_t angle = (int16_t)(this->steer_angle * 100);
     buf[5] = (uint8_t)angle;
-    buf[6] = angle >> 8;
+    buf[6] = (uint8_t)(angle >> 8);
     buf[7] = (uint8_t)9999;
     buf[8] = 9999 >> 8;
     buf[9] = (uint8_t)8888;
@@ -59,7 +59,7 @@ int AOG_FromAutoSteer::get_buf(uint8_t *buf, const size_t len)
     buf[11] = this->switches;
     buf[12] = this->pwm_display;
 
-    int chk = 0;
+    uint8_t chk = 0;
     for (uint8_t i = 2; i < 13; i++)
     {
         chk = (chk + buf[i]);

@@ -79,7 +79,7 @@ void autosteer_task(void *)
             if (steerData.guidanceStatus)
             {
                 float angle_err = steerData.steerAngleSetpoint - angle_act;
-                int16_t p_gain = (int)(angle_err * (float)aog_steerSettings.kp);
+                int16_t p_gain = (int16_t)(angle_err * (float)aog_steerSettings.kp);
                 uint16_t p_gain_abs = abs(p_gain) + aog_steerSettings.minPWM;
                 bool dir = p_gain > 1;
                 if (aog_steerConfig.MotorDriveDirection)
@@ -88,7 +88,7 @@ void autosteer_task(void *)
                 uint8_t max_pwm = aog_steerSettings.highPWM;
                 if (abs(angle_err) < 5.0)
                 {
-                    max_pwm = (abs(angle_err) * highLowPerDeg) + aog_steerSettings.lowPWM;
+                    max_pwm = (uint8_t)(abs(angle_err) * highLowPerDeg) + aog_steerSettings.lowPWM;
                 }
                 if (p_gain_abs > max_pwm)
                     p_gain_abs = max_pwm;
@@ -98,7 +98,7 @@ void autosteer_task(void *)
                 digitalWriteFast(hardwareConfiguration.output_pin_enb, 1);
                 digitalWriteFast(hardwareConfiguration.output_pin_ina, dir);
                 digitalWriteFast(hardwareConfiguration.output_pin_inb, !dir);
-                aogFromAutosteer.pwm_display = p_gain_abs;
+                aogFromAutosteer.pwm_display = (uint8_t)p_gain_abs;
                 break;
             }
             else

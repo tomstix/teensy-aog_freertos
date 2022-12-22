@@ -17,7 +17,7 @@ int get_json_from_file(const char* filename, json& j)
     if (FsFile json_file = SD.sdfs.open(filename, O_READ))
     {
         Log.verboseln(F("Opened file %s"), filename);
-        unsigned int len = json_file.fileSize();
+        auto len = json_file.fileSize();
         if (len == 0)
         {
             Log.warningln(F("JSON file %s is empty!"), filename);
@@ -30,7 +30,7 @@ int get_json_from_file(const char* filename, json& j)
         int i = 0;
         while(json_file.available())
         {
-            json_str += json_file.read();
+            json_str += (char)json_file.read();
             i++;
         }
         Log.verboseln(F("Read %i bytes."), i);

@@ -63,7 +63,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
             Log.errorln(F("Failed to initialize ADS!"));
         }
         ads.setGain(GAIN_ONE);
-        auto ads_mode = ADS1X15_REG_CONFIG_MUX_SINGLE_0;
+        uint16_t ads_mode = ADS1X15_REG_CONFIG_MUX_SINGLE_0;
         if (hardwareConfiguration.ads1115_differential_mode)
         {
             switch (hardwareConfiguration.ads1115_was_pin)
@@ -163,7 +163,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
         {
         case (WASType::TEENSY):
         {
-            int16_t was_raw = analogRead(hardwareConfiguration.teensy_was_pin_number) - 2048;
+            int was_raw = analogRead(hardwareConfiguration.teensy_was_pin_number) - 2048;
             float was_value = (float)(was_raw + aog_steerSettings.wasOffset) / (float)aog_steerSettings.steerSensorCounts;
             was_value = aog_steerConfig.InvertWAS ? -was_value : was_value;
             if (was_value < 0)
