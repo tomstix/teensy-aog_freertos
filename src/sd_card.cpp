@@ -78,6 +78,7 @@ int store_json_file(const char* filename, const json& j)
 SDLog::SDLog(const char* filename, const char* directory)
 {
     root = SD.open(directory);
+    auto file = SD.open(filename);
 }
 
 void sd_card_task(void *)

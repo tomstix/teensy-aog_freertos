@@ -50,8 +50,8 @@ void gnss_task(void *)
         gnss.checkCallbacks();
         if ((xStreamBufferIsEmpty(ntripStreamBuffer) == pdFALSE) && GNSS_PORT.availableForWrite())
         {
+            static uint8_t buf[1024];
             auto available = GNSS_PORT.availableForWrite();
-            uint8_t buf[available];
             auto written = xStreamBufferReceive(ntripStreamBuffer, buf, available, 0);
             GNSS_PORT.write(buf, written);
         }
