@@ -25,7 +25,7 @@ int AOG_SteerData::parse(const uint8_t *buf, size_t len)
 {
     if (len != 14)
     {
-        Log.errorln(F("AOG SteerData to parse doesn't match expected length!"));
+        Log.errorln("AOG SteerData to parse doesn't match expected length!");
         return EXIT_FAILURE;
     }
     speed = ((float)(buf[5] | buf[6] << 8)) * 0.1;
@@ -41,7 +41,7 @@ int AOG_FromAutoSteer::get_buf(uint8_t *buf, const size_t len)
 {
     if (len != 14)
     {
-        Log.errorln(F("Buffer provided for Message From AutoSteer has incorrect size!"));
+        Log.errorln("Buffer provided for Message From AutoSteer has incorrect size!");
         return EXIT_FAILURE;
     }
     buf[0] = 0x80;
@@ -74,15 +74,15 @@ void ethernet_task(void *)
     Log.traceln("Ethernet Task started!");
     uint8_t mac[6];
     Ethernet.macAddress(mac);
-    Log.infoln(F("MAC Address: %x::%x::%x::%x::%x::%x"), mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    Log.infoln(F("IP Address: %p"), networkConfiguration.ip);
+    Log.infoln("MAC Address: %x::%x::%x::%x::%x::%x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    Log.infoln("IP Address: %p", networkConfiguration.ip);
     Ethernet.onLinkState(
         [](bool state)
         {
             if (state)
-                Log.infoln(F("Ethernet Link detected. Running at %u Mbps."), Ethernet.linkSpeed());
+                Log.infoln("Ethernet Link detected. Running at %u Mbps.", Ethernet.linkSpeed());
             else
-                Log.errorln(F("Ethernet Link lost!"));
+                Log.errorln("Ethernet Link lost!");
         });
     Ethernet.begin(networkConfiguration.ip, networkConfiguration.netmask, networkConfiguration.gateway);
     while (1)
@@ -102,7 +102,7 @@ void aog_udp_task(void *)
     EthernetUDP ntripUDP(10);
     ntripUDP.begin(AOG_NTRIP_PORT);
 
-    Log.infoln(F("AOG UDP Task started!"));
+    Log.infoln("AOG UDP Task started!");
 
     AOG_SteerData steerData;
     AOG_SteerConfig steerConfig;
@@ -134,7 +134,7 @@ void aog_udp_task(void *)
                     steerData.timestamp_ms = millis();
                     if (xQueueSend(aogSteerDataQueue, &steerData, 0) != pdTRUE)
                     {
-                        Log.warningln(F("AOG Steer Data Queue Full!"));
+                        Log.warningln("AOG Steer Data Queue Full!");
                     }
                     AOG_FromAutoSteer aogFromAutosteer;
                     xQueueReceive(aogFromAutosteerQueue, &aogFromAutosteer, pdMS_TO_TICKS(10));
@@ -159,7 +159,7 @@ void aog_udp_task(void *)
             }
             else
             {
-                Log.warningln(F("Received AOG UDP packet, that doesn't match 0x80817F - scheme."));
+                Log.warningln("Received AOG UDP packet, that doesn't match 0x80817F - scheme.");
             }
         }
 
@@ -178,22 +178,22 @@ void init_aog_comms()
 {
     aogSteerDataQueue = xQueueCreate(1, sizeof(AOG_SteerData));
     if (aogSteerDataQueue == NULL)
-        Log.errorln(F("Failed to create aogSteerDataQueue!"));
+        Log.errorln("Failed to create aogSteerDataQueue!");
     aogSteerSettingsQueue = xQueueCreate(1, sizeof(AOG_SteerSettings));
     if (aogSteerSettingsQueue == NULL)
-        Log.errorln(F("Failed to create aogSteerSettingsQueue!"));
+        Log.errorln("Failed to create aogSteerSettingsQueue!");
     aogSteerConfigQueue = xQueueCreate(1, sizeof(AOG_SteerConfig));
     if (aogSteerConfigQueue == NULL)
-        Log.errorln(F("Failed to create aogSteerDataQueue!"));
+        Log.errorln("Failed to create aogSteerDataQueue!");
     aogFromAutosteerQueue = xQueueCreate(1, sizeof(AOG_FromAutoSteer));
     if (aogFromAutosteerQueue == NULL)
-        Log.errorln(F("Failed to create aogFromAutosteerQueue!"));
+        Log.errorln("Failed to create aogFromAutosteerQueue!");
     sendNMEABuffer = xMessageBufferCreate(512);
     if (sendNMEABuffer == NULL)
-        Log.errorln(F("Failed to create sendNMEABuffer!"));
+        Log.errorln("Failed to create sendNMEABuffer!");
     ntripStreamBuffer = xStreamBufferCreate(1024, 16);
     if (ntripStreamBuffer == NULL)
-        Log.errorln(F("Failed to create ntripStreamBuffer!"));
+        Log.errorln("Failed to create ntripStreamBuffer!");
 
     xTaskCreate(ethernet_task, "Ethernet Task", 1024, nullptr, 4, nullptr);
     xTaskCreate(aog_udp_task, "AOG UDP Task", 2048, nullptr, 3, nullptr);

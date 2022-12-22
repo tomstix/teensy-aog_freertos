@@ -14,7 +14,7 @@ EventGroupHandle_t settings_loaded_event;
 
 void to_json(json &j, const HardwareConfiguration &config)
 {
-    Log.verboseln(F("Making HardwareConfiguration JSON..."));
+    Log.verboseln("Making HardwareConfiguration JSON...");
     j["IMU Type"] = config.imuType;
     j["WAS"]["Type"] = config.wasType;
     j["WAS"]["Teensy Pin"] = config.teensy_was_pin_number;
@@ -37,15 +37,15 @@ void to_json(json &j, const HardwareConfiguration &config)
 void from_json(const json &j, HardwareConfiguration &config)
 {
     if (!j.at("IMU Type").get_to(config.imuType))
-        Log.errorln(F("Tried parsing Invalid IMU Type from JSON"));
+        Log.errorln("Tried parsing Invalid IMU Type from JSON");
     if (!j.at("WAS").at("Type").get_to(config.wasType))
-        Log.errorln(F("Tried parsing Invalid WAS Type from JSON"));
+        Log.errorln("Tried parsing Invalid WAS Type from JSON");
     if (!j.at("WAS").at("Teensy Pin").get_to(config.teensy_was_pin_number))
-        Log.errorln(F("Tried parsing Invalid WAS Pin from JSON"));
+        Log.errorln("Tried parsing Invalid WAS Pin from JSON");
     j.at("WAS").at("ADS1115 Pin").get_to(config.ads1115_was_pin);
     j.at("WAS").at("ADS1115 Differential").get_to(config.ads1115_differential_mode);
     if (!j.at("Output").at("Type").get_to(config.outputType))
-        Log.errorln(F("Tried parsing Invalid Output Type from JSON"));
+        Log.errorln("Tried parsing Invalid Output Type from JSON");
     auto pins = j.at("Output").at("Pins");
     pins.at("ENA").get_to(config.output_pin_ena);
     pins.at("ENB").get_to(config.output_pin_enb);
@@ -63,7 +63,7 @@ void from_json(const json &j, HardwareConfiguration &config)
 
 void to_json(json &j, const NetworkConfiguration &config)
 {
-    Log.verboseln(F("Making NetworkConfiguration JSON..."));
+    Log.verboseln("Making NetworkConfiguration JSON...");
     j["IP Address"] = {config.ip[0], config.ip[1], config.ip[2], config.ip[3]};
     j["Netmask"] = {config.netmask[0], config.netmask[1], config.netmask[2], config.netmask[3]};
     j["Gateway"] = {config.gateway[0], config.gateway[1], config.gateway[2], config.gateway[3]};
@@ -80,7 +80,7 @@ void from_json(const json &j, NetworkConfiguration &config)
                         {
         if(vec.size() != 4)
         {
-            Log.errorln(F("Error Converting JSON to NetworkConfiguration! Vector doesn't have 4 components."));
+            Log.errorln("Error Converting JSON to NetworkConfiguration! Vector doesn't have 4 components.");
             return IPAddress(0,0,0,0);
         }
         IPAddress ret_ip;
@@ -110,7 +110,7 @@ void AOG_SteerSettings::parse(uint8_t *buf)
     wasOffset |= buf[11] << 8;
     ackermannFix = (float)buf[12] / 100.0;
 
-    Log.traceln(F("Parsed new AOG steer settings!"));
+    Log.traceln("Parsed new AOG steer settings!");
 }
 void to_json(json &j, const AOG_SteerSettings &settings)
 {
@@ -154,7 +154,7 @@ void AOG_SteerConfig::parse(uint8_t *buf)
     PressureSensor = read_bit(sett, 1);
     CurrentSensor = read_bit(sett, 2);
 
-    Log.traceln(F("Parsed new AOG steer config!"));
+    Log.traceln("Parsed new AOG steer config!");
 }
 void to_json(json &j, const AOG_SteerConfig &settings)
 {
@@ -201,7 +201,7 @@ void save_settings()
 
 void settings_task(void *)
 {
-    Log.infoln(F("Loading Settings..."));
+    Log.infoln("Loading Settings...");
 
     json settings_json;
     if (get_json_from_file(SETTINGS_FILE_NAME, settings_json) == EXIT_FAILURE)
@@ -215,7 +215,7 @@ void settings_task(void *)
         settings_json.at("Network Configuration").get_to(networkConfiguration);
         settings_json.at("AOG Steer Settings").get_to(aog_steerSettings);
         settings_json.at("AOG Steer Config").get_to(aog_steerConfig);
-        Log.infoln(F("Settings loaded!"));
+        Log.infoln("Settings loaded!");
     }
     xEventGroupSetBits(settings_loaded_event, 0x01);
     while (1)

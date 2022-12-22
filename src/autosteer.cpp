@@ -4,12 +4,12 @@
 #include "autosteer.hpp"
 #include "sensors.hpp"
 
-constexpr uint16_t STEER_TIMEOUT_MS = 1000;
+uint16_t STEER_TIMEOUT_MS = 1000;
 
 void autosteer_task(void *)
 {
     xEventGroupWaitBits(settings_loaded_event, 0x01, pdFALSE, pdFALSE, portMAX_DELAY);
-    Log.infoln(F("Autosteer Task started!"));
+    Log.infoln("Autosteer Task started!");
     AOG_SteerData steerData;
     AOG_FromAutoSteer aogFromAutosteer;
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -34,11 +34,11 @@ void autosteer_task(void *)
         if (hardwareConfiguration.steerswitch_pin != 0)
         {
             pinMode(hardwareConfiguration.steerswitch_pin, INPUT_PULLUP);
-            Log.verboseln(F("Steerswitch set to Pin %u."), hardwareConfiguration.steerswitch_pin);
+            Log.verboseln("Steerswitch set to Pin %u.", hardwareConfiguration.steerswitch_pin);
         }
         else
         {
-            Log.warningln(F("Steerswitch Pin selected but Pin is 0!"));
+            Log.warningln("Steerswitch Pin selected but Pin is 0!");
         }
     }
     if (hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_PIN || hardwareConfiguration.workswitchType == WorkswitchType::WORKSWITCH_ANALOG)
@@ -46,11 +46,11 @@ void autosteer_task(void *)
         if (hardwareConfiguration.workswitch_pin != 0)
         {
             pinMode(hardwareConfiguration.workswitch_pin, INPUT_PULLUP);
-            Log.verboseln(F("Workswitch set to Pin %u."), hardwareConfiguration.workswitch_pin);
+            Log.verboseln("Workswitch set to Pin %u.", hardwareConfiguration.workswitch_pin);
         }
         else
         {
-            Log.warningln(F("Workswitch Pin selected but Pin is 0!"));
+            Log.warningln("Workswitch Pin selected but Pin is 0!");
         }
     }
 
@@ -64,10 +64,8 @@ void autosteer_task(void *)
 
         aogFromAutosteer.steer_angle = angle_act;
 
-        if ((millis() - steerData.timestamp_ms > STEER_TIMEOUT_MS) && steerData.guidanceStatus)
+        if (millis() - steerData.timestamp_ms > STEER_TIMEOUT_MS)
         {
-            Log.warningln(F("SteerData too old! Turning off steering."));
-            xEventGroupSetBits(switchesEventGroup, 0x02);
             steerData.guidanceStatus = false;
         }
 
@@ -139,12 +137,12 @@ void autosteer_task(void *)
                 if (on)
                 {
                     xEventGroupClearBits(switchesEventGroup, 0x02);
-                    Log.verboseln(F("Steerswitch on!"));
+                    Log.verboseln("Steerswitch on!");
                 }
                 else
                 {
                     xEventGroupSetBits(switchesEventGroup, 0x02);
-                    Log.verboseln(F("Steerswitch off!"));
+                    Log.verboseln("Steerswitch off!");
                 }
             };
             if (aog_steerConfig.SteerButton)
