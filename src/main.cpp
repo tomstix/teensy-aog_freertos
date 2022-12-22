@@ -8,7 +8,7 @@
 
 void heartbeat_task(void *)
 {
-  Log.infoln("Heartbeat Task started!");
+  Log.infoln(F("Heartbeat Task started!"));
   while(1)
   {
     for( int i = 0; i < 256; i++ )
@@ -33,8 +33,8 @@ void setup()
   digitalWrite(13, 0);
   Log.begin(LOG_LEVEL_VERBOSE, &Serial);
 
-  Log.infoln("Starting teensy-aog Version %u.%u ...", VERSION_MAJOR, VERSION_MINOR);
-  Log.infoln("Running FreeRTOS kernel " tskKERNEL_VERSION_NUMBER ". Built by gcc " __VERSION__ ".");
+  Log.infoln(F("Starting teensy-aog Version %u.%u ..."), VERSION_MAJOR, VERSION_MINOR);
+  Log.infoln(F("Running FreeRTOS kernel " tskKERNEL_VERSION_NUMBER ". Built by gcc " __VERSION__ "."));
 
   Serial.flush();
 

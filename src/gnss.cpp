@@ -27,17 +27,17 @@ void pvt_callback(UBX_NAV_PVT_data_t* pvt)
 void gnss_task(void *)
 {
     xEventGroupWaitBits(settings_loaded_event, 0x01, pdFALSE, pdFALSE, portMAX_DELAY);
-    Log.traceln("Starting GNSS...");
+    Log.traceln(F("Starting GNSS..."));
     GNSS_PORT.begin(115200);
     if (gnss.begin(GNSS_PORT) == false)
     {
-        Log.errorln("Failed to initialize GNSS! Trying again...");
+        Log.errorln(F("Failed to initialize GNSS! Trying again..."));
         if (gnss.begin(GNSS_PORT, 5000) == false)
         {
-            Log.fatalln("Failed to initialize GNSS!");
+            Log.fatalln(F("Failed to initialize GNSS!"));
         }
     }
-    Log.traceln("GNSS initialized!");
+    Log.traceln(F("GNSS initialized!"));
     gnss.setUART1Output(COM_TYPE_UBX);
     gnss.setNavigationFrequency(10);
     gnss.setAutoPVT(true);

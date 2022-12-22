@@ -34,7 +34,7 @@ float gyro_zero_offsets[3] = {0.0F * rawToDPS * dpsToRad,
 void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
 {
     xEventGroupWaitBits(settings_loaded_event, 0x01, pdFALSE, pdFALSE, portMAX_DELAY); // wait for settings to be loaded
-    Log.infoln("Starting Sensors Task...");
+    Log.infoln(F("Starting Sensors Task..."));
 
     TickType_t sensors_task_interval = pdMS_TO_TICKS(10);
     TickType_t last_sensors_task_t = 0;
@@ -46,13 +46,13 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
     {
         if (hardwareConfiguration.teensy_was_pin_number < 1)
         {
-            Log.errorln("When Teensy is selected as WAS Type, Pin Number can not be 0!");
+            Log.errorln(F("When Teensy is selected as WAS Type, Pin Number can not be 0!"));
         }
         else
         {
             pinMode(hardwareConfiguration.teensy_was_pin_number, INPUT);
             analogReadResolution(12);
-            Log.traceln("WAS Input set to Teensy pin %u", hardwareConfiguration.teensy_was_pin_number);
+            Log.traceln(F("WAS Input set to Teensy pin %u"), hardwareConfiguration.teensy_was_pin_number);
         }
         break;
     }
@@ -60,7 +60,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
     {
         if (!ads.begin())
         {
-            Log.errorln("Failed to initialize ADS!");
+            Log.errorln(F("Failed to initialize ADS!"));
         }
         ads.setGain(GAIN_ONE);
         auto ads_mode = ADS1X15_REG_CONFIG_MUX_SINGLE_0;
@@ -75,7 +75,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
                 ads_mode = ADS1X15_REG_CONFIG_MUX_DIFF_2_3;
                 break;
             default:
-                Log.warningln("Invalid ADS Pin Setting in Differential Mode!");
+                Log.warningln(F("Invalid ADS Pin Setting in Differential Mode!"));
             }
         }
         else
@@ -95,7 +95,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
                 ads_mode = ADS1X15_REG_CONFIG_MUX_SINGLE_3;
                 break;
             default:
-                Log.warningln("Invalid ADS Pin Settin in Single Mode!");
+                Log.warningln(F("Invalid ADS Pin Settin in Single Mode!"));
             }
         }
         ads.startADCReading(ads_mode, true);
@@ -108,7 +108,7 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
     }
     case (WASType::NO_WAS):
     {
-        Log.warningln("No WAS Type selected!");
+        Log.warningln(F("No WAS Type selected!"));
         break;
     }
     }
@@ -123,18 +123,18 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
     case (ImuType::CMPS14):
     {
         auto ver = cmps.begin();
-        Log.infoln("CMPS Version: %u", ver);
+        Log.infoln(F("CMPS Version: %u"), ver);
         break;
     }
     case (ImuType::LSM6DS):
     {
         if (!lsm6dsox.begin_I2C())
         {
-            Log.errorln("Failed to find LSM6DSOX!");
+            Log.errorln(F("Failed to find LSM6DSOX!"));
         }
         else
         {
-            Log.infoln("LSM6DSOX found!");
+            Log.infoln(F("LSM6DSOX found!"));
             lsm6dsox.setGyroRange(LSM6DS_GYRO_RANGE_125_DPS);
             lsm6dsox.setAccelRange(LSM6DS_ACCEL_RANGE_2_G);
         }
@@ -144,14 +144,14 @@ void sensors_task(void *) // Task to poll I2C Sensors and Teensy Pins
         }
         else
         {
-            Log.infoln("LIS3MDL found!");
+            Log.infoln(F("LIS3MDL found!"));
         }
         sensorfusion.begin(100);
         break;
     }
     case (ImuType::NO_IMU):
     {
-        Log.warningln("No IMU Type selected!");
+        Log.warningln(F("No IMU Type selected!"));
         break;
     }
     }
@@ -245,12 +245,12 @@ void init_sensors()
     queueWAStoAutosteer = xQueueCreate(1, sizeof(float));
     if (queueWAStoAutosteer == nullptr)
     {
-        Log.errorln("Failed to create queueWAStoAutosteer!");
+        Log.errorln(F("Failed to create queueWAStoAutosteer!"));
     }
     imuToGNSSQueue = xQueueCreate(1, sizeof(IMUData));
     if (imuToGNSSQueue == nullptr)
     {
-        Log.errorln("Failed to create imuToGNSSQueue!");
+        Log.errorln(F("Failed to create imuToGNSSQueue!"));
     }
     switchesEventGroup = xEventGroupCreate();
     xEventGroupSetBits(switchesEventGroup, 0x03);
